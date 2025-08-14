@@ -1,0 +1,118 @@
+from exif_reader import ExifReader
+from PyQt6.QtWidgets import QApplication, QMainWindow, QPushButton, QVBoxLayout, QWidget, QFileDialog, QDialog, QLabel, QScrollArea, QScrollBar, QMessageBox, QFrame
+from PyQt6.QtGui import QPixmap
+from PyQt6.QtCore import Qt
+global formatted_data
+formatted_data = []
+
+
+class MainWindow(QMainWindow):
+    def __init__(self):
+        super().__init__()
+        self.setWindowTitle("Exif Reader GUI")
+        self.setGeometry(100, 100, 600, 400)
+        central_widget = QWidget()
+        self.setCentralWidget(central_widget)
+        layout = QVBoxLayout()
+                
+        self.file_path_label = QLabel("No image selected.")
+        self.file_path_label.setAlignment(Qt.AlignmentFlag.AlignHCenter)
+        layout.addWidget(self.file_path_label)
+        
+        # Default file path label
+        
+        
+        self.image_label = QLabel("Image will be displayed here.")
+        self.image_label.setAlignment(Qt.AlignmentFlag.AlignHCenter | Qt.AlignmentFlag.AlignVCenter)
+        self.image_label.setFixedSize(400, 400)
+        self.image_label.setFrameStyle(QFrame.Shadow.Sunken | QFrame.Shape.Box)
+        layout.addWidget(self.image_label, alignment=Qt.AlignmentFlag.AlignCenter)
+        
+        # Default image label placeholder and its frame
+        
+        
+        # Create a button
+        button1 = QPushButton("Select Image")
+        button1.clicked.connect(self.on_button_click)
+        layout.addWidget(button1)
+        
+        button2 = QPushButton("Show EXIF Data")
+        button2.clicked.connect(self.showDialog)
+        layout.addWidget(button2)
+        # Set the layout on the central widget
+        central_widget.setLayout(layout)
+
+    def on_button_click(self):
+        #Using QFileDialog to select an image file
+        formatted_data.clear()
+        file_dialog = QFileDialog(self)
+        file_dialog.setNameFilter("Images (*.png *.jpg *.jpeg *.bmp *.gif)")
+        if file_dialog.exec():
+            selected_files = file_dialog.selectedFiles()
+            if selected_files:
+                image_path = selected_files[0]
+                self.file_path_label.setText(f"Selected Image: {image_path}")
+                exif_data = ExifReader(image_path).get_exif_data()
+                for tag, value in exif_data.items():
+                    if tag != "MakerNote":
+                        formatted_data.append(f"{tag}: {value}")
+                print("EXIF data read successfully.")
+                pixmap = QPixmap(image_path)
+                scaled_pixmap = pixmap.scaled(self.image_label.size(), Qt.AspectRatioMode.KeepAspectRatio, Qt.TransformationMode.SmoothTransformation)
+                self.image_label.setPixmap(scaled_pixmap)
+            
+    def showDialog(self):
+        # Show the EXIF data in a dialog
+        if (formatted_data):
+            dialog = infoDialog()
+            dialog.show()
+            dialog.exec()
+        else:
+            msgbox = QMessageBox(self)
+            msgbox.setIcon(QMessageBox.Icon.Information)
+            msgbox.setText("Image not selected. ")
+            msgbox.setWindowTitle("Warning")
+            msgbox.setStandardButtons(QMessageBox.StandardButton.Ok)
+            msgbox.exec()
+                               
+                        
+class infoDialog(QDialog):
+    def __init__(self):
+        super().__init__()
+        self.setWindowTitle("EXIF Data")
+        self.setGeometry(150, 150, 400, 300)
+        self.setMinimumSize(300, 200)
+        self.setSizeGripEnabled(True)
+
+        scroll_area = QScrollArea()
+        scroll_area.setWidgetResizable(True)
+        scroll_area.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAsNeeded)
+        scroll_area.setVerticalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAsNeeded)
+        scroll_area.setWidget(QWidget())
+        content_widget = QWidget()
+        content_layout = QVBoxLayout(content_widget)
+        for data in formatted_data:
+            label = QLabel(data)
+            label.setWordWrap(True)
+            content_layout.addWidget(label)
+        content_layout.addStretch()
+        scroll_area.setWidget(content_widget)
+        # Word presentation area, scrollable
+
+        main_layout = QVBoxLayout()
+        main_layout.addWidget(scroll_area)
+        # Set the main layout for the dialog
+        back_button = QPushButton("Back")
+        back_button.clicked.connect(self.back_button)
+        main_layout.addWidget(back_button)
+        self.setLayout(main_layout)
+
+    def back_button(self):
+        self.close()
+
+        
+if __name__ == "__main__":
+    app = QApplication([])
+    window = MainWindow()
+    window.show()
+    app.exec()
