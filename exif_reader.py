@@ -7,7 +7,7 @@ class ExifReader:
         # self.config_path = config_path
         self.exif_data = {}
         self.gui_exif_data = {}
-        
+
     # Config file currently is only for stating the components needed for GUI program. 
 
     def read_exif(self):

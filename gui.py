@@ -1,5 +1,5 @@
 from exif_reader import ExifReader
-from PyQt6.QtWidgets import QApplication, QMainWindow, QPushButton, QVBoxLayout, QWidget, QFileDialog, QDialog, QLabel, QScrollArea, QScrollBar, QMessageBox, QFrame, QListWidget, QListWidgetItem
+from PyQt6.QtWidgets import QApplication, QMainWindow, QPushButton, QVBoxLayout, QWidget, QFileDialog, QDialog, QLabel, QScrollArea, QScrollBar, QMessageBox, QFrame, QListWidget, QListWidgetItem, QTableWidget, QTableWidgetItem, QHeaderView
 from PyQt6.QtGui import QPixmap
 from PyQt6.QtCore import Qt
 global formatted_data
@@ -43,6 +43,10 @@ class MainWindow(QMainWindow):
         button3 = QPushButton("Show EXIF Data (List)")
         button3.clicked.connect(self.showListDialog)
         layout.addWidget(button3)
+
+        button4 = QPushButton("Show EXIF Data (Table)")
+        button4.clicked.connect(self.showTableDialog)
+        layout.addWidget(button4)
         central_widget.setLayout(layout)
 
     def on_select_button_click(self):
@@ -64,7 +68,7 @@ class MainWindow(QMainWindow):
                 pixmap = QPixmap(image_path)
                 scaled_pixmap = pixmap.scaled(self.image_label.size(), Qt.AspectRatioMode.KeepAspectRatio, Qt.TransformationMode.SmoothTransformation)
                 self.image_label.setPixmap(scaled_pixmap)
-            
+
     def showDialog(self):
         # Show the EXIF data in a dialog
         if (formatted_data):
@@ -78,13 +82,13 @@ class MainWindow(QMainWindow):
             msgbox.setWindowTitle("Warning")
             msgbox.setStandardButtons(QMessageBox.StandardButton.Ok)
             msgbox.exec()
-            
+
     def showListDialog(self):
         if (formatted_data):
             dialog = listDialog()
             dialog.show()
             dialog.exec()
-        
+
         else:
             msgbox = QMessageBox(self)
             msgbox.setIcon(QMessageBox.Icon.Information)
@@ -92,8 +96,23 @@ class MainWindow(QMainWindow):
             msgbox.setWindowTitle("Warning")
             msgbox.setStandardButtons(QMessageBox.StandardButton.Ok)
             msgbox.exec()
-                               
-                        
+            
+    def showTableDialog(self):
+        if (formatted_data):
+            dialog = tableDialog()
+            dialog.show()
+            dialog.exec()
+
+        else:
+            msgbox = QMessageBox(self)
+            msgbox.setIcon(QMessageBox.Icon.Information)
+            msgbox.setText("Image not selected. ")
+            msgbox.setWindowTitle("Warning")
+            msgbox.setStandardButtons(QMessageBox.StandardButton.Ok)
+            msgbox.exec()
+
+
+                              
 class infoDialog(QDialog):
     def __init__(self):
         super().__init__()
@@ -127,7 +146,7 @@ class infoDialog(QDialog):
 
     def back_button(self):
         self.close()
-        
+   
 class listDialog(QDialog):
     def __init__(self):
         super().__init__()
@@ -145,21 +164,62 @@ class listDialog(QDialog):
         back_button.clicked.connect(self.back_button)
         main_layout.addWidget(back_button)
         self.setLayout(main_layout)
-        
+  
     def populate_list(self):
         global formatted_data
         for data in formatted_data:
             item = QListWidgetItem(data)
             self.list_widget.addItem(item)
-            
+  
     def back_button(self):
         self.close()
         
-        
-    
-    
 
+class tableDialog(QDialog):
+    def __init__(self):
+        super().__init__()
+        self.setWindowTitle("EXIF Data (Table Mode)")
+        self.setGeometry(150, 150, 400, 300)
+        self.setMinimumSize(300, 200)
+        self.setSizeGripEnabled(True)
+        self.table_widget = QTableWidget()
+        self.table_widget.setHorizontalHeaderLabels(["Tag","Value"])
+        self.table_widget.verticalHeader().setVisible(False)
+        self.table_widget.horizontalHeader().setVisible(False)
+        self.table_widget.horizontalHeader().setSectionResizeMode(QHeaderView.ResizeMode.Stretch)
+        self.populate_table()
         
+        main_layout = QVBoxLayout()
+        main_layout.addWidget(self.table_widget)
+        
+        back_button = QPushButton("Back")
+        back_button.clicked.connect(self.back_button)
+        main_layout.addWidget(back_button)
+        self.setLayout(main_layout)
+  
+    def populate_table(self):
+        global formatted_data
+        row = 0
+        self.table_widget.setRowCount(len(formatted_data))  # Set the number of rows
+        self.table_widget.setColumnCount(2)
+        for data in formatted_data:
+            if ":" in data:  # Split the data into key and value
+                if row != 0:
+                    key, value = data.split(":", 1)
+                else:
+                    key = "Tag"
+                    value = "Value"
+   
+                key_item = QTableWidgetItem(key.strip())
+                value_item = QTableWidgetItem(value.strip())
+                self.table_widget.setItem(row, 0, key_item)  # Add key to column 0
+                self.table_widget.setItem(row, 1, value_item)  # Add value to column 1
+                row +=1
+  
+    def back_button(self):
+        self.close()
+
+
 if __name__ == "__main__":
     app = QApplication([])
     window = MainWindow()
