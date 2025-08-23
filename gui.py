@@ -40,9 +40,10 @@ class MainWindow(QMainWindow):
         button2.clicked.connect(self.showDialog)
         layout.addWidget(button2)
         
-        button3 = QPushButton("Show EXIF Data (List)")
-        button3.clicked.connect(self.showListDialog)
-        layout.addWidget(button3)
+        # button3 = QPushButton("Show EXIF Data (List)")
+        # button3.clicked.connect(self.showListDialog)
+        # layout.addWidget(button3)
+        # List mode removed
 
         button4 = QPushButton("Show EXIF Data (Table)")
         button4.clicked.connect(self.showTableDialog)
@@ -82,20 +83,6 @@ class MainWindow(QMainWindow):
             msgbox.setWindowTitle("Warning")
             msgbox.setStandardButtons(QMessageBox.StandardButton.Ok)
             msgbox.exec()
-
-    def showListDialog(self):
-        if (formatted_data):
-            dialog = listDialog()
-            dialog.show()
-            dialog.exec()
-
-        else:
-            msgbox = QMessageBox(self)
-            msgbox.setIcon(QMessageBox.Icon.Information)
-            msgbox.setText("Image not selected. ")
-            msgbox.setWindowTitle("Warning")
-            msgbox.setStandardButtons(QMessageBox.StandardButton.Ok)
-            msgbox.exec()
             
     def showTableDialog(self):
         if (formatted_data):
@@ -111,8 +98,6 @@ class MainWindow(QMainWindow):
             msgbox.setStandardButtons(QMessageBox.StandardButton.Ok)
             msgbox.exec()
 
-
-                              
 class infoDialog(QDialog):
     def __init__(self):
         super().__init__()
@@ -146,34 +131,6 @@ class infoDialog(QDialog):
 
     def back_button(self):
         self.close()
-   
-class listDialog(QDialog):
-    def __init__(self):
-        super().__init__()
-        self.setWindowTitle("EXIF Data (List Mode)")
-        self.setGeometry(150, 150, 400, 300)
-        self.setMinimumSize(300, 200)
-        self.setSizeGripEnabled(True)
-        self.list_widget = QListWidget()
-        self.populate_list()
-        
-        main_layout = QVBoxLayout()
-        main_layout.addWidget(self.list_widget)
-        
-        back_button = QPushButton("Back")
-        back_button.clicked.connect(self.back_button)
-        main_layout.addWidget(back_button)
-        self.setLayout(main_layout)
-  
-    def populate_list(self):
-        global formatted_data
-        for data in formatted_data:
-            item = QListWidgetItem(data)
-            self.list_widget.addItem(item)
-  
-    def back_button(self):
-        self.close()
-        
 
 class tableDialog(QDialog):
     def __init__(self):
