@@ -27,14 +27,11 @@ class ExifReader:
     def get_exif_data(self):
         self.read_exif()
         return self.exif_data
-    
-    def gui_exif_data(self):
-        self.get_exif_data()
-        
+
 
 if __name__ == "__main__":
     image = ExifReader(sys.argv[1])
-    image.read_exif()
+    image.get_exif_data()
     for tag, value in image.get_exif_data().items():
         if (tag != "MakerNote"):
             print(f"{tag}: {value}") 

@@ -1,5 +1,5 @@
 from exif_reader import ExifReader
-from PyQt6.QtWidgets import QApplication, QMainWindow, QPushButton, QVBoxLayout, QWidget, QFileDialog, QDialog, QLabel, QScrollArea, QScrollBar, QMessageBox, QFrame
+from PyQt6.QtWidgets import QApplication, QMainWindow, QPushButton, QVBoxLayout, QWidget, QFileDialog, QDialog, QLabel, QScrollArea, QScrollBar, QMessageBox, QFrame, QListWidget, QListWidgetItem
 from PyQt6.QtGui import QPixmap
 from PyQt6.QtCore import Qt
 global formatted_data
@@ -33,16 +33,19 @@ class MainWindow(QMainWindow):
         
         # Create a button
         button1 = QPushButton("Select Image")
-        button1.clicked.connect(self.on_button_click)
+        button1.clicked.connect(self.on_select_button_click)
         layout.addWidget(button1)
         
         button2 = QPushButton("Show EXIF Data")
         button2.clicked.connect(self.showDialog)
         layout.addWidget(button2)
-        # Set the layout on the central widget
+        
+        button3 = QPushButton("Show EXIF Data (List)")
+        button3.clicked.connect(self.showListDialog)
+        layout.addWidget(button3)
         central_widget.setLayout(layout)
 
-    def on_button_click(self):
+    def on_select_button_click(self):
         #Using QFileDialog to select an image file
         formatted_data.clear()
         file_dialog = QFileDialog(self)
@@ -56,6 +59,7 @@ class MainWindow(QMainWindow):
                 for tag, value in exif_data.items():
                     if tag != "MakerNote":
                         formatted_data.append(f"{tag}: {value}")
+                        # formatted_data is for plain text formatted exif information. 
                 print("EXIF data read successfully.")
                 pixmap = QPixmap(image_path)
                 scaled_pixmap = pixmap.scaled(self.image_label.size(), Qt.AspectRatioMode.KeepAspectRatio, Qt.TransformationMode.SmoothTransformation)
@@ -67,6 +71,20 @@ class MainWindow(QMainWindow):
             dialog = infoDialog()
             dialog.show()
             dialog.exec()
+        else:
+            msgbox = QMessageBox(self)
+            msgbox.setIcon(QMessageBox.Icon.Information)
+            msgbox.setText("Image not selected. ")
+            msgbox.setWindowTitle("Warning")
+            msgbox.setStandardButtons(QMessageBox.StandardButton.Ok)
+            msgbox.exec()
+            
+    def showListDialog(self):
+        if (formatted_data):
+            dialog = listDialog()
+            dialog.show()
+            dialog.exec()
+        
         else:
             msgbox = QMessageBox(self)
             msgbox.setIcon(QMessageBox.Icon.Information)
@@ -109,6 +127,37 @@ class infoDialog(QDialog):
 
     def back_button(self):
         self.close()
+        
+class listDialog(QDialog):
+    def __init__(self):
+        super().__init__()
+        self.setWindowTitle("EXIF Data (List Mode)")
+        self.setGeometry(150, 150, 400, 300)
+        self.setMinimumSize(300, 200)
+        self.setSizeGripEnabled(True)
+        self.list_widget = QListWidget()
+        self.populate_list()
+        
+        main_layout = QVBoxLayout()
+        main_layout.addWidget(self.list_widget)
+        
+        back_button = QPushButton("Back")
+        back_button.clicked.connect(self.back_button)
+        main_layout.addWidget(back_button)
+        self.setLayout(main_layout)
+        
+    def populate_list(self):
+        global formatted_data
+        for data in formatted_data:
+            item = QListWidgetItem(data)
+            self.list_widget.addItem(item)
+            
+    def back_button(self):
+        self.close()
+        
+        
+    
+    
 
         
 if __name__ == "__main__":
