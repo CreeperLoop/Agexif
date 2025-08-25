@@ -1,6 +1,7 @@
-import sys, argparse
+import sys
+import argparse
 from PIL import Image
-from PIL.ExifTags import TAGS, GPSTAGS
+from PIL.ExifTags import TAGS
 from exiftool import ExifToolHelper
 
 class ExifReader:
@@ -21,13 +22,13 @@ class ExifReader:
         parser.add_argument("-w", "--write" , help = "Exif Write Mode", action = 'store_true')
         try:
             args = parser.parse_args()
-        except:
-            print("Error: No image path specified. ")
-            exit()
+        except Exception as e:
+            print("Error: No image path specified. ", e)
+            sys.exit()
         self.image_path = args.image_path
-        if (args.read):
+        if args.read:
             self.print_exif_data()
-        elif (args.write):
+        elif args.write:
             self.write_exif()
             exit()
         else:
@@ -56,27 +57,27 @@ class ExifReader:
             try:
                 et.set_tags(self.image_path, {tag: new_value})
                 print(f"Updated {tag} to {new_value} in {self.image_path}")
-            except: 
-                print(f"Failed to update {tag}. Please ensure the tag is valid.")
-                exit()
+            except Exception as e:
+                print(f"Failed to update {tag}. Please ensure the tag is valid. Error: {e}")
+                sys.exit()
 
     def get_exif_data(self):
         self.read_exif()
         return self.exif_data
-    
+
     def print_exif_data(self):
         exif_dict_items = self.get_exif_data().items()
         for tag, value in exif_dict_items:
             if tag != "MakerNote":
                 print(f"{tag}: {value}") 
-                
+
     def print_exif_tags(self):
         exif_dict_items = self.get_exif_data().items()
         for tag, value in exif_dict_items:
             if tag != "MakerNote":
                 print(f"{tag}, ") 
     # Using Pillow methods to print exif tags. May be deprecated in future.
-    
+
     def print_exif_tags_eth(self):
         with ExifToolHelper() as et:
             if self.debug:
@@ -91,6 +92,6 @@ class ExifReader:
 
 
 if __name__ == "__main__":
-        a = ExifReader()
+    a = ExifReader()
 
-# For testing purposes. 
+# For testing purposes.
