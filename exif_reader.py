@@ -4,8 +4,9 @@ from PIL import Image
 from PIL.ExifTags import TAGS
 from exiftool import ExifToolHelper
 
+
 class ExifReader:
-    def __init__(self, image_path = None, debug = 0):
+    def __init__(self, image_path=None, debug=0):
         self.image_path = image_path
         self.exif_data = {}
         self.option = "Read"
@@ -13,13 +14,13 @@ class ExifReader:
         if __name__ == "__main__":
             self.arg_handler()
         # Default option is Read
-        # Setting debug code to 1 will add arrary index after each line of printed exif data
-        
+        # Set debug to 1 for verbose output
+
     def arg_handler(self):
         parser = argparse.ArgumentParser()
-        parser.add_argument("image_path", help = "Absolute path of an image file")
-        parser.add_argument("-r", "--read" , help = "Exif Read Mode", action = 'store_true')
-        parser.add_argument("-w", "--write" , help = "Exif Write Mode", action = 'store_true')
+        parser.add_argument("image_path", help="Absolute path of image file")
+        parser.add_argument("-r", "--read", help="Exif Read Mode", action='store_true')
+        parser.add_argument("-w", "--write", help="Exif Write Mode", action='store_true')
         try:
             args = parser.parse_args()
         except Exception as e:
@@ -38,7 +39,7 @@ class ExifReader:
         print("Entering read_exif method")
         try:
             image = Image.open(self.image_path)
-            exif_info = image._getexif()
+            exif_info = image.getexif()
             if exif_info is not None:
                 for tag_id, value in exif_info.items():
                     tag_name = TAGS.get(tag_id, tag_id)
