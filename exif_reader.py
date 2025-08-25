@@ -2,7 +2,7 @@ import sys
 from PIL import Image
 from PIL.ExifTags import TAGS, GPSTAGS
 class ExifReader:
-    def __init__(self, image_path):
+    def __init__(self, image_path = None):
         self.image_path = image_path
         self.exif_data = {}
         self.option = "Read"
