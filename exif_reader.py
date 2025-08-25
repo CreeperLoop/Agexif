@@ -1,9 +1,10 @@
 import sys, argparse
 from PIL import Image
 from PIL.ExifTags import TAGS, GPSTAGS
+from exiftool import ExifToolHelper
 
 class ExifReader:
-    def __init__(self, image_path = None, debug = 1):
+    def __init__(self, image_path = None, debug = 0):
         self.image_path = image_path
         self.exif_data = {}
         self.option = "Read"
@@ -48,37 +49,16 @@ class ExifReader:
             print(f"Error reading EXIF data: {e}", file=sys.stderr)
 
     def write_exif(self):
-        print("Entering write_exif method")
-        try:
-            with Image.open(self.image_path) as image:
-                # Get existing EXIF data
-                exif_info = image.getexif()
-                # Show available tags first
-                print("\nAvailable EXIF tags:")
-                self.print_exif_tags()
-                # Get tag input from user
-                tag = input("\nEnter the Tag you would like to adjust: ")
-                # Find the tag ID for the specified tag name
-                tag_id = None
-                for key, value in TAGS.items():
-                    if value.lower() == tag.lower():
-                        tag_id = key
-                        break
-                if tag_id is None:
-                    print(f"Error: Tag '{tag}' not found in EXIF specifications.")
-                    return
-                # Get the new value from user
-                new_value = input("Enter the new value: ")
-                # Update EXIF data
-                exif_info[tag_id] = new_value.encode('utf-8')
-                print (exif_info[tag_id])
-                print (type(exif_info[tag_id]))
-                # Create a new image with updated EXIF
-                # image.save(self.image_path, exif=exif_info)
-                print (type(exif_info))
-                print(f"Successfully updated {tag} to: {new_value}")
-        except Exception as e:
-            print(f"Error writing EXIF data: {e}", file=sys.stderr)
+        self.print_exif_tags_eth()
+        tag = input("Enter the tag you want to modify: ")
+        new_value = input("Enter the new value: ")
+        with ExifToolHelper() as et:
+            try:
+                et.set_tags(self.image_path, {tag: new_value})
+                print(f"Updated {tag} to {new_value} in {self.image_path}")
+            except: 
+                print(f"Failed to update {tag}. Please ensure the tag is valid.")
+                exit()
 
     def get_exif_data(self):
         self.read_exif()
@@ -95,7 +75,19 @@ class ExifReader:
         for tag, value in exif_dict_items:
             if tag != "MakerNote":
                 print(f"{tag}, ") 
-        
+    # Using Pillow methods to print exif tags. May be deprecated in future.
+    
+    def print_exif_tags_eth(self):
+        with ExifToolHelper() as et:
+            if self.debug:
+                for d in et.get_metadata(self.image_path):
+                    for k, v in d.items():
+                        print(f"Dict: {k} = {v}")
+            else: 
+                for d in et.get_metadata(self.image_path):
+                    for k, v in d.items():
+                        k = k.split(":")[-1]
+                        print(f"{k} = {v}")
 
 
 if __name__ == "__main__":
