@@ -4,11 +4,20 @@ from PIL.ExifTags import TAGS, GPSTAGS
 class ExifReader:
     def __init__(self, image_path):
         self.image_path = image_path
-        # self.config_path = config_path
         self.exif_data = {}
-        self.gui_exif_data = {}
+        self.option = "Read"
+        if __name__ == "__main__":
+            self.arg_handler()
+        # Default option is Read
+        
+    def arg_handler(self):
+        try:
+            print(sys.argv[1])
+            self.image_path = sys.argv[1]
+        except:
+            print("Error: no input file or command")
+            exit()
 
-    # Config file currently is only for stating the components needed for GUI program. 
 
     def read_exif(self):
         print("Entering read_exif method")
@@ -27,13 +36,15 @@ class ExifReader:
     def get_exif_data(self):
         self.read_exif()
         return self.exif_data
+    
+    def print_exif_data(self):
+        for tag, value in self.get_exif_data().items():
+            if (tag != "MakerNote"):
+                print(f"{tag}: {value}") 
 
 
 if __name__ == "__main__":
-    image = ExifReader(sys.argv[1])
-    image.get_exif_data()
-    for tag, value in image.get_exif_data().items():
-        if (tag != "MakerNote"):
-            print(f"{tag}: {value}") 
+        a = ExifReader()
+        a.print_exif_data()
 
 # For testing purposes. 
