@@ -1,6 +1,7 @@
-import sys
+import sys, argparse
 from PIL import Image
 from PIL.ExifTags import TAGS, GPSTAGS
+
 class ExifReader:
     def __init__(self, image_path = None):
         self.image_path = image_path
@@ -11,13 +12,23 @@ class ExifReader:
         # Default option is Read
         
     def arg_handler(self):
+        parser = argparse.ArgumentParser()
+        parser.add_argument("image_path", help = "Absolute path of an image file")
+        parser.add_argument("-r", "--read" , help = "Exif Read Mode", action = 'store_true')
+        parser.add_argument("-w", "--write" , help = "Exif Write Mode", action = 'store_true')
         try:
-            print(sys.argv[1])
-            self.image_path = sys.argv[1]
+            args = parser.parse_args()
         except:
-            print("Error: no input file or command")
+            print("Error: No image path specified. ")
             exit()
-
+        self.image_path = args.image_path
+        if (args.read):
+            self.print_exif_data()
+        elif (args.write):
+            print ("Write function currently not implemented")
+            exit()
+        else:
+            self.print_exif_data()
 
     def read_exif(self):
         print("Entering read_exif method")
@@ -45,6 +56,5 @@ class ExifReader:
 
 if __name__ == "__main__":
         a = ExifReader()
-        a.print_exif_data()
 
 # For testing purposes. 
